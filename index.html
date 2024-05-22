@@ -17,18 +17,18 @@
 
     // 장소 이름을 통해 위치 찾기
     function getLatLngFromPlace(placeName, callback) {
-      placesService.search({
+      naver.maps.Service.geocode({
         query: placeName
       }, function(status, response) {
-        if (status === naver.maps.Service.Status.ERROR) {
+        if (status !== naver.maps.Service.Status.OK) {
           return alert('Place search error: ' + placeName);
         }
-        if (response.result.total === 0) {
+        if (response.v2.meta.totalCount === 0) {
           return alert('No result: ' + placeName);
         }
 
-        var item = response.result.items[0];
-        var point = new naver.maps.LatLng(item.point.y, item.point.x);
+        var item = response.v2.addresses[0];
+        var point = new naver.maps.LatLng(item.y, item.x);
         callback(point);
       });
     }
