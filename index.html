@@ -9,49 +9,81 @@
   <div id="map" style="width:100%;height:500px;"></div>
   <script>
     var map = new naver.maps.Map('map', {
-      center: new naver.maps.LatLng(37.554722, 126.925000), // 중심좌표를 중간 위치로 설정
+      center: new naver.maps.LatLng(37.554722, 126.925000), // 중심 좌표를 중간 위치로 설정
       zoom: 15
     });
 
-    var start = new naver.maps.LatLng(37.551229, 126.924613); // 홍익대학교 정문
-    var end = new naver.maps.LatLng(37.557191, 126.925332); // 홍대입구역 9번 출구
+    var geocoder = new naver.maps.Service();
 
-    var markerStart = new naver.maps.Marker({
-      position: start,
-      map: map,
-      title: '홍익대학교 정문'
-    });
+    // 주소를 통해 위치 찾기
+    function getLatLngFromAddress(address, callback) {
+      geocoder.geocode({
+        query: address
+      }, function(status, response) {
+        if (status === naver.maps.Service.Status.ERROR) {
+          return alert('Geocode error: ' + address);
+        }
+        if (response.v2.meta.totalCount === 0) {
+          return alert('No result: ' + address);
+        }
 
-    var markerEnd = new naver.maps.Marker({
-      position: end,
-      map: map,
-      title: '홍대입구역 9번 출구'
-    });
+        var item = response.v2.addresses[0];
+        var point = new naver.maps.Point(item.x, item.y);
+        callback(point);
+      });
+    }
 
-    var directionsService = new naver.maps.DirectionsService();
+    // 시작 위치와 도착 위치
+    var startAddress = '서울특별시 마포구 와우산로 94'; // 홍익대학교 정문
+    var endAddress = '서울특별시 마포구 양화로 160'; // 홍대입구역 9번 출구
 
-    directionsService.route({
-      start: start,
-      goal: end,
-      option: naver.maps.DirectionsService.Option.WALKING // 도보 경로 설정
-    }, function(status, response) {
-      if (status !== naver.maps.DirectionsService.Status.OK) {
-        return alert('경로를 불러오는 데 실패했습니다.');
-      }
-
-      var route = response.route.traoptimal[0];
-      var path = route.path.map(function(point) {
-        return new naver.maps.LatLng(point[1], point[0]);
+    // 경로 설정
+    function setRoute(start, end) {
+      var markerStart = new naver.maps.Marker({
+        position: start,
+        map: map,
+        title: '홍익대학교 정문'
       });
 
-      var polyline = new naver.maps.Polyline({
+      var markerEnd = new naver.maps.Marker({
+        position: end,
         map: map,
-        path: path,
-        strokeColor: '#5347AA',
-        strokeWeight: 6
+        title: '홍대입구역 9번 출구'
+      });
+
+      var directionsService = new naver.maps.DirectionsService();
+
+      directionsService.route({
+        start: start,
+        goal: end,
+        option: naver.maps.DirectionsService.Option.WALKING // 도보 경로 설정
+      }, function(status, response) {
+        if (status !== naver.maps.DirectionsService.Status.OK) {
+          return alert('경로를 불러오는 데 실패했습니다.');
+        }
+
+        var route = response.route.traoptimal[0];
+        var path = route.path.map(function(point) {
+          return new naver.maps.LatLng(point[1], point[0]);
+        });
+
+        var polyline = new naver.maps.Polyline({
+          map: map,
+          path: path,
+          strokeColor: '#5347AA',
+          strokeWeight: 6
+        });
+      });
+    }
+
+    // 주소를 통한 경로 설정
+    getLatLngFromAddress(startAddress, function(start) {
+      getLatLngFromAddress(endAddress, function(end) {
+        setRoute(start, end);
       });
     });
   </script>
 </body>
 </html>
+
 
