@@ -13,29 +13,29 @@
       zoom: 15
     });
 
-    var geocoder = new naver.maps.Service();
+    var placesService = new naver.maps.Service();
 
-    // 주소를 통해 위치 찾기
-    function getLatLngFromAddress(address, callback) {
-      geocoder.geocode({
-        query: address
+    // 장소 이름을 통해 위치 찾기
+    function getLatLngFromPlace(placeName, callback) {
+      placesService.search({
+        query: placeName
       }, function(status, response) {
         if (status === naver.maps.Service.Status.ERROR) {
-          return alert('Geocode error: ' + address);
+          return alert('Place search error: ' + placeName);
         }
-        if (response.v2.meta.totalCount === 0) {
-          return alert('No result: ' + address);
+        if (response.result.total === 0) {
+          return alert('No result: ' + placeName);
         }
 
-        var item = response.v2.addresses[0];
-        var point = new naver.maps.Point(item.x, item.y);
+        var item = response.result.items[0];
+        var point = new naver.maps.LatLng(item.point.y, item.point.x);
         callback(point);
       });
     }
 
-    // 시작 위치와 도착 위치
-    var startAddress = '서울특별시 마포구 와우산로 100'; // 홍익대학교 정문
-    var endAddress = '서울특별시 마포구 양화로 160'; // 홍대입구역 9번 출구
+    // 시작 장소와 도착 장소
+    var startPlace = '홍익대학교 정문'; // 홍익대학교 정문
+    var endPlace = '홍대입구역 9번 출구'; // 홍대입구역 9번 출구
 
     // 경로 설정
     function setRoute(start, end) {
@@ -76,14 +76,12 @@
       });
     }
 
-    // 주소를 통한 경로 설정
-    getLatLngFromAddress(startAddress, function(start) {
-      getLatLngFromAddress(endAddress, function(end) {
+    // 장소를 통한 경로 설정
+    getLatLngFromPlace(startPlace, function(start) {
+      getLatLngFromPlace(endPlace, function(end) {
         setRoute(start, end);
       });
     });
   </script>
 </body>
 </html>
-
-
